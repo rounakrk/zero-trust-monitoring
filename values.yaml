@@ -46,7 +46,7 @@ alertmanager:
     receivers:
     - name: 'discord-notifications'
       slack_configs:
-      - api_url: 'https://discord.com/api/webhooks/1490589464588980264/eNkTRzQdDzUwMUZDXmQwOzpHCPRXg-NfpJA404IQxY_BLQfGk05XfvuFdT_-G2_vG5DR/slack'
+      - api_url: ''
         channel: '#alerts'
         send_resolved: true
         title: '{{ .GroupLabels.alertname }}'
