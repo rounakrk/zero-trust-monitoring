@@ -1,0 +1,55 @@
+# 1. Global Exporter Cleanup (Root Level)
+# These are the components showing as "Down" in Kind
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
+
+grafana:
+  adminPassword: "admin123"
+  service:
+    type: ClusterIP
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      # This removes the "Required value" error by switching to ephemeral storage
+      emptyDir:
+        medium: ""
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+# 3. Exporter Enablement
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+
+alertmanager:
+  enabled: true
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      # We force the default to our receiver
+      receiver: 'discord-notifications' 
+      group_by: ['alertname', 'job', 'severity']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+    receivers:
+    - name: 'discord-notifications'
+      slack_configs:
+      - api_url: 'https://discord.com/api/webhooks/1490589464588980264/eNkTRzQdDzUwMUZDXmQwOzpHCPRXg-NfpJA404IQxY_BLQfGk05XfvuFdT_-G2_vG5DR/slack'
+        channel: '#alerts'
+        send_resolved: true
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}'
+    # --- THE TRICK: Add a dummy 'null' receiver to stop the Operator's error ---
+    - name: 'null'
